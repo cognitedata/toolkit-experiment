@@ -24,6 +24,18 @@ jobs:
           virtualenvs-create: false
       - name: Install dependencies
         run: poetry sync
+      - name: Dump last commit message to file
+        run: git log -1 --pretty=%B > last_git_message.txt
+      - name: Dump last tag to file
+        run: git describe --tags --abbrev=0 > last_version.txt
+      - name: Bump Version
+        run: python dev.py bump --verbose
+      - name: Create CHANGELOG entry
+        run: python dev.py changelog
+      - id: version
+        name: Read the new version
+        # Read the version from the cognite_toolkit/_version.py file
+        run: echo "version=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' cognite_toolkit/_version.py)" >> $GITHUB_ENV
       - name: Build package
         run: poetry build
       - name: Release to PyPI
@@ -31,4 +43,12 @@ jobs:
 #          TWINE_USERNAME: __token__
 #          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
 #        run: twine upload --skip-existing  --verbose dist/*
-        run: echo "Releasing to PyPI"
+        run: echo "Would release to PyPI"
+      - name: Add entry to CHANGELOG
+        uses: ncipollo/release-action@v1
+        with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            prerelease: false
+            draft: false
+            tag: ${{ env.version }}
+            bodyFile: last_changelog_entry.md
