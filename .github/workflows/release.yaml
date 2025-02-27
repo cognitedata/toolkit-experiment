@@ -30,10 +30,6 @@ jobs:
         run: git log -1 --pretty=%B > last_git_message.txt
       - name: Dump last tag to file
         run: git describe --tags --abbrev=0 > last_version.txt
-      - id: last_version
-        name: Read the last version version
-        # Read the version from the cognite_toolkit/_version.py file
-        run: echo "last_version=$(sed -n 's/^\(.*\)/\1/p' last_version.txt)" >> $GITHUB_ENV
       - name: Bump Version
         run: python dev.py bump --verbose
       - name: Create CHANGELOG entry
@@ -43,17 +39,17 @@ jobs:
         # Read the version from the cognite_toolkit/_version.py file
         run: echo "version=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' cognite_toolkit/_version.py)" >> $GITHUB_ENV
       - name: Build package
-        if: env.last_version != env.version
+        if: env.version != '0.0.0'
         run: poetry build
       - name: Release to PyPI
-        if: env.last_version != env.version
+        if: env.version != '0.0.0'
 #        env:
 #          TWINE_USERNAME: __token__
 #          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
 #        run: twine upload --skip-existing  --verbose dist/*
         run: echo "Would release to PyPI"
       - name: Add entry to CHANGELOG
-        if: env.last_version != env.version
+        if: env.version != '0.0.0'
         uses: ncipollo/release-action@v1
         with:
             token: ${{ secrets.GITHUB_TOKEN }}
