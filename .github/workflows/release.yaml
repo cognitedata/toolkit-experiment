@@ -33,7 +33,7 @@ jobs:
       - id: last_version
         name: Read the last version version
         # Read the version from the cognite_toolkit/_version.py file
-        run: echo "last_version=$(sed -n 's/^\(.*\)/\1/p' last_version.txt)" >> $GITHUB_E
+        run: echo "last_version=$(sed -n 's/^\(.*\)/\1/p' last_version.txt)" >> $GITHUB_ENV
       - name: Bump Version
         run: python dev.py bump --verbose
       - name: Create CHANGELOG entry
