@@ -1,19 +1,19 @@
 """This is a small CLI used to develop Toolkit."""
+
 import itertools
 import re
 from datetime import date
 from pathlib import Path
 from typing import Literal, get_args
 
+import marko
+import marko.block
+import marko.element
+import marko.inline
 import typer
-from more_itertools.more import first
 from packaging.version import Version, parse
 from rich import print
-from rich.markup import escape
-import marko.element
-import marko.block
-import marko.inline
-import marko
+
 from cognite_toolkit._version import __version__
 
 REPO_ROOT = Path(__file__).parent
@@ -166,7 +166,9 @@ def create_changelog() -> None:
         print("No changelog entry found in the last commit message.")
         raise SystemExit(1)
     changelog_text = last_git_message.split("## Changelog")[1].strip()
-    changelog_items = [item for item in marko.parse(changelog_text).children if not isinstance(item, marko.block.BlankLine)]
+    changelog_items = [
+        item for item in marko.parse(changelog_text).children if not isinstance(item, marko.block.BlankLine)
+    ]
     if not changelog_items:
         print("No changelog items found in the last commit message.")
         raise SystemExit(1)
@@ -186,18 +188,23 @@ def create_changelog() -> None:
         raise SystemExit(1)
     cdf_entries = list(itertools.takewhile(lambda x: not _is_header(x, level=2), changelog_items[2:]))
     _validate_entries(cdf_entries, "cdf")
-    no = next((no for no, item in enumerate(changelog_items) if _is_header(item, level=2, text='templates')), None)
+    no = next((no for no, item in enumerate(changelog_items) if _is_header(item, level=2, text="templates")), None)
     if no is None:
         print("No '## templates' section found in the changelog.")
         raise SystemExit(1)
-    if not changelog_items[no + 1:]:
+    if not changelog_items[no + 1 :]:
         print("No template entries found in the changelog.")
         raise SystemExit(1)
-    template_entries = list(changelog_items[no + 1:])
+    template_entries = list(changelog_items[no + 1 :])
     _validate_entries(template_entries)
 
+
 def _is_header(item: marko.element.Element, level: int, text: str | None = None):
-    if not (isinstance(item, marko.block.Heading) and item.level == level and isinstance(item.children[0], marko.inline.RawText)):
+    if not (
+        isinstance(item, marko.block.Heading)
+        and item.level == level
+        and isinstance(item.children[0], marko.inline.RawText)
+    ):
         return False
     return text is None or item.children[0].children == text
 
@@ -235,15 +242,21 @@ def _get_change(item: marko.block.List) -> Literal["major", "minor", "patch", "s
         raise SystemExit(1)
     return selected[0]
 
+
 def _validate_entries(items: list[marko.element.Element], section: str) -> None:
     seen_headers: set[str] = set()
     if not items:
         print(f"No entries found in the {section} section of the changelog.")
         raise SystemExit(1)
-    if isinstance(items[0], marko.block.Paragraph) and isinstance(items[0].children[0], marko.inline.RawText) and items[0].children[0].children == "No changes.":
+    if (
+        isinstance(items[0], marko.block.Paragraph)
+        and isinstance(items[0].children[0], marko.inline.RawText)
+        and items[0].children[0].children == "No changes."
+    ):
         return
 
     raise NotImplementedError("This function is not implemented yet.")
+
 
 # This is just for demo purposes, to test the secret plugin in the Toolkit CLI
 import_app = typer.Typer(
