@@ -1,20 +1,17 @@
 """This is a small CLI used to develop Toolkit."""
 import itertools
 import re
-from datetime import date
 from pathlib import Path
 from typing import Literal, get_args
 
 import typer
-from more_itertools.more import first
 from packaging.version import Version, parse
 from rich import print
-from rich.markup import escape
 import marko.element
 import marko.block
 import marko.inline
 import marko
-from cognite_toolkit._version import __version__
+
 
 REPO_ROOT = Path(__file__).parent
 CHANGELOG = REPO_ROOT / "CHANGELOG.cdf-tk.md"
